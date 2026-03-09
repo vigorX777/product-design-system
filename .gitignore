@@ -1,6 +1,21 @@
-# macOS
+# 公司内部内容（不上传）
+v4.5.x/
+v5.1/
+v5.2/
+附件/
+Excalidraw/
+_临时脚本归档/
+
+# 编辑器与工具
+.obsidian/
 .DS_Store
-.DS_Store?
+*.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统与缓存
 ._*
 .Spotlight-V7
 .Trashes
@@ -8,20 +23,9 @@ Icon?
 ehthumbs.db
 Thumbs.db
 
-# Obsidian
-.obsidian/
-
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs
+# 日志与依赖
 *.log
-
-# Node (just in case)
 node_modules/
 
-# Sisyphus working files (not for public)
-.sisyphus/
+# 进展备忘（临时文件）
+_进展备忘.md
