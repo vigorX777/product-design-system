@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多选下拉弹窗模板</title>
+    <!--
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║  多选下拉编辑弹窗模板（MultiSelect Modal）                        ║
+    ║  适用场景：列表行级别的多值关联编辑（含锁定项 + 可选项）           ║
+    ║  技术要点：Modal overflow-y:auto 时下拉面板用 fixed 定位防裁切    ║
+    ║  来源案例：v4.5.x/观测中心/应用、服务层支持通过CMDB映射第三方实例  ║
+    ╚══════════════════════════════════════════════════════════════════╝
+    -->
+    <style>
+        /* ===== CSS Variables (MagicBox Design Token) ===== */
+        :root {
+            --color-primary: #1272FF;
+            --color-primary-hover: #3388FF;
+            --color-primary-active: #0F5FD9;
+            --color-success: #27C274;
+            --color-warning: #FF9214;
+            --color-danger: #F43B2C;
+            --color-text-primary: rgba(0, 0, 0, 0.85);
+            --color-text-secondary: rgba(0, 0, 0, 0.55);
+            --color-text-disabled: rgba(0, 0, 0, 0.25);
+            --color-border: #D1D7E1;
+            --color-bg-base: #F5F7FA;
+            --color-bg-white: #FFFFFF;
+            --border-radius: 4px;
+            --btn-height-normal: 32px;
+            --font-size-base: 14px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* ===== Reset & Base ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            color: var(--color-text-primary);
+            background: var(--color-bg-base);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== 触发按钮演示区 ===== */
+        .demo-area {
+            background: #fff;
+            border-radius: 4px;
+            padding: 24px;
+            border: 1px solid var(--color-border);
+            text-align: center;
+        }
+        .demo-label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: 16px;
+        }
+        .demo-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--color-bg-base);
+            font-size: 14px;
+        }
+        .demo-row:last-of-type { border-bottom: none; }
+        .demo-name { min-width: 80px; font-weight: 500; }
+        .demo-tags { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
+
+        /* ===== 按钮 ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: var(--btn-height-normal);
+            padding: 0 16px;
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-base);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+        .btn-primary:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+        .btn-default { color: var(--color-text-primary); background: var(--color-bg-white); border-color: var(--color-border); }
+        .btn-default:hover { color: var(--color-primary); border-color: var(--color-primary); }
+        .btn-text {
+            color: var(--color-primary);
+            background: transparent;
+            border-color: transparent;
+            padding: 0 4px;
+            height: auto;
+            font-size: 13px;
+        }
+        .btn-text:hover { color: var(--color-primary-hover); }
+
+        /* ===== Tag ===== */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 8px;
+            border-radius: 2px;
+            font-size: 12px;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+        .tag-blue { background: #E1ECFF; color: var(--color-primary); border-color: rgba(18,114,255,0.3); }
+        .tag-apm { background: #E8F7EF; color: #27C274; border-color: rgba(39,194,116,0.3); }
+
+        /* ===== Modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.is-visible { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+            width: 560px;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 16px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .modal-close { cursor: pointer; color: rgba(0,0,0,0.45); font-size: 18px; line-height: 1; }
+        .modal-close:hover { color: var(--color-text-primary); }
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;  /* ← 此属性导致 absolute 下拉被裁切，故子组件用 fixed */
+            padding: 20px;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+
+        /* ===== 表单字段 ===== */
+        .form-field { margin-bottom: 16px; }
+        .form-field:last-child { margin-bottom: 0; }
+        .form-label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .form-label-required { color: var(--color-danger); font-size: 13px; }
+        .form-value-readonly {
+            font-size: 14px;
+            color: var(--color-text-primary);
+            padding: 8px 0;
+            line-height: 1.6;
+        }
+        .unset-text { color: var(--color-warning); }
+
+        /* ===== 多选下拉选择器（MultiSelect）===== */
+
+        /* 输入框容器 */
+        .multi-select {
+            position: relative;
+            min-height: 36px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 4px 32px 4px 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            background: #fff;
+            user-select: none;
+            transition: border-color 0.2s;
+        }
+        .multi-select:hover { border-color: var(--color-primary); }
+        .multi-select.is-open {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(18,114,255,0.15);
+        }
+
+        /* 下拉箭头 */
+        .multi-select-arrow {
+            position: absolute;
+            right: 10px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: rgba(0,0,0,0.45);
+            transition: transform 0.2s;
+            pointer-events: none;
+        }
+        .multi-select.is-open .multi-select-arrow {
+            transform: translateY(-50%) rotate(180deg);
+        }
+        .multi-select-placeholder {
+            font-size: 13px;
+            color: var(--color-text-disabled);
+        }
+
+        /* 已选 tag */
+        .ms-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 22px;
+            padding: 0 6px;
+            background: #E1ECFF;
+            border: 1px solid rgba(18,114,255,0.3);
+            border-radius: 2px;
+            font-size: 12px;
+            color: var(--color-primary);
+            white-space: nowrap;
+        }
+        /* × 删除按钮（锁定项无此元素） */
+        .ms-tag-close { cursor: pointer; opacity: 0.6; font-size: 11px; line-height: 1; }
+        .ms-tag-close:hover { opacity: 1; }
+
+        /* ===== 下拉面板 — position:fixed 避免被 Modal overflow 裁切 ===== */
+        .ms-dropdown {
+            position: fixed;          /* 关键：不用 absolute */
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 9999;            /* 高于 Modal */
+            max-height: 240px;
+            overflow-y: auto;
+            display: none;
+        }
+        .ms-dropdown.is-open { display: block; }
+
+        /* 选项行 */
+        .ms-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: var(--color-text-primary);
+            cursor: pointer;
+        }
+        .ms-option:hover { background: #F0F5FF; }
+        /* 锁定项（disabled）：置灰，不可点击 */
+        .ms-option.is-disabled { color: var(--color-text-disabled); cursor: not-allowed; }
+        .ms-option.is-disabled:hover { background: none; }
+        .ms-option input[type="checkbox"] {
+            accent-color: var(--color-primary);
+            width: 15px; height: 15px;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .ms-option.is-disabled input[type="checkbox"] { cursor: not-allowed; }
+
+        /* ===== Toast ===== */
+        .toast-container {
+            position: fixed;
+            top: 16px; left: 0; right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 2000;
+            pointer-events: none;
+        }
+        .toast {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.75);
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .toast.is-visible { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<!-- ===== 演示区（模拟列表行） ===== -->
+<div class="demo-area">
+    <div class="demo-label">点击「编辑」按钮演示多选下拉弹窗交互</div>
+
+    <div class="demo-row">
+        <div class="demo-name">应用层</div>
+        <div class="demo-tags">
+            <span class="tag tag-apm">APM探针</span>
+            <span class="tag tag-blue">听云服务</span>
+        </div>
+        <button class="btn btn-text" onclick="openModal('应用', ['APM探针', '听云服务'], ['APM探针', '听云服务', '中广核应急系统'])">编辑</button>
+    </div>
+
+    <div class="demo-row">
+        <div class="demo-name">服务层</div>
+        <div class="demo-tags">
+            <span class="tag tag-apm">APM探针</span>
+            <span class="tag tag-blue">听云服务</span>
+            <span class="tag tag-blue">听云实例</span>
+        </div>
+        <button class="btn btn-text" onclick="openModal('服务', ['APM探针', '听云服务', '听云实例'], ['APM探针', '听云服务', '听云实例'])">编辑</button>
+    </div>
+
+    <div class="demo-row">
+        <div class="demo-name">数据库层</div>
+        <div class="demo-tags">
+            <span class="tag tag-blue">Oracle</span>
+            <span class="tag tag-blue">MySQL</span>
+        </div>
+        <button class="btn btn-text" onclick="openModal('数据库', ['Oracle', 'MySQL'], ['Oracle', 'MySQL', 'MSSQL', 'Redis'])">编辑</button>
+    </div>
+</div>
+
+<!-- ===== Modal 弹窗 ===== -->
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <span id="modal-title">编辑关联对象模型 — 应用</span>
+            <span class="modal-close" onclick="closeModal()">×</span>
+        </div>
+        <div class="modal-body">
+            <!-- 多选下拉选择器 -->
+            <div class="form-field">
+                <div class="form-label">
+                    对象模型
+                    <span class="form-label-required">*</span>
+                </div>
+                <!--
+                    multi-select 输入框：点击展开下拉
+                    已选 tag 渲染在此容器内（placeholder 和 arrow 保持在末尾）
+                -->
+                <div class="multi-select" id="multi-select" onclick="toggleDropdown()">
+                    <span class="multi-select-placeholder" id="ms-placeholder">请选择对象模型</span>
+                    <span class="multi-select-arrow">▾</span>
+                </div>
+                <!--
+                    下拉面板：position:fixed，由 toggleDropdown() 动态计算坐标
+                    锁定项：.is-disabled（无法点击，checkbox disabled）
+                    可选项：onclick="toggleOption(this, event)"
+                -->
+                <div class="ms-dropdown" id="ms-dropdown">
+                    <!-- 选项由 openModal() 动态生成 -->
+                </div>
+            </div>
+
+            <!-- 只读展示区（模拟关联关系字段） -->
+            <div class="form-field">
+                <div class="form-label">关联关系字段 <span style="color: var(--color-text-disabled); font-size: 12px;">（只读，在对象模型管理中配置）</span></div>
+                <div class="form-value-readonly" id="rel-field-display">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" onclick="closeModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveModal()">确定</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 下拉面板（放在 body 末尾，脱离 Modal 堆叠上下文）===== -->
+<!-- 注：此处演示将 #ms-dropdown 放在 modal-body 内，依赖 fixed 定位解决裁切；
+     如需更彻底隔离，可将 #ms-dropdown 移至 </body> 前，效果相同。 -->
+
+<!-- ===== Toast ===== -->
+<div class="toast-container">
+    <div class="toast" id="toast"></div>
+</div>
+
+<script>
+    // ─────────── 数据模型 ───────────
+    // locked: 锁定项（始终选中，不可删）; options: 全量可选项（含锁定项）
+    const LOCKED_ITEM = 'APM探针';  // 演示用：应用/服务层 APM探针为锁定项
+
+    // 关联关系字段示例数据（只读展示）
+    const REL_FIELDS = {
+        '应用': 'APM探针（N/A）；听云服务（belong_to_business）',
+        '服务': 'APM探针（N/A）；听云服务（belong_to_app）；听云实例（<span class="unset-text">未配置</span>）',
+        '数据库': 'Oracle（db_instance_rel）；MySQL（<span class="unset-text">未配置</span>）',
+    };
+
+    let currentLayerName = '';
+    let currentSelected = [];
+    let allOptions = [];
+
+    // ─────────── 打开弹窗 ───────────
+    function openModal(layerName, selected, options) {
+        currentLayerName = layerName;
+        currentSelected = [...selected];
+        allOptions = options;
+
+        // 设置标题
+        document.getElementById('modal-title').textContent = `编辑关联对象模型 — ${layerName}`;
+
+        // 渲染关联关系字段（只读）
+        const relEl = document.getElementById('rel-field-display');
+        relEl.innerHTML = REL_FIELDS[layerName] || '—';
+
+        // 渲染下拉选项
+        const dropdown = document.getElementById('ms-dropdown');
+        let html = '';
+        options.forEach(name => {
+            const isLocked = (name === LOCKED_ITEM);
+            const isChecked = selected.includes(name);
+            const checkedAttr = isChecked ? 'checked' : '';
+            if (isLocked) {
+                html += `<div class="ms-option is-disabled">
+                    <input type="checkbox" ${checkedAttr} disabled> ${name}
+                </div>`;
+            } else {
+                html += `<div class="ms-option" onclick="toggleOption(this, event)">
+                    <input type="checkbox" ${checkedAttr} onclick="event.stopPropagation()"> ${name}
+                </div>`;
+            }
+        });
+        dropdown.innerHTML = html;
+
+        // 收起下拉状态
+        dropdown.classList.remove('is-open');
+        document.getElementById('multi-select').classList.remove('is-open');
+
+        // 渲染已选 tags
+        renderTags();
+
+        // 显示弹窗
+        document.getElementById('modal-overlay').classList.add('is-visible');
+    }
+
+    // ─────────── 展开/收起下拉 ───────────
+    // 核心技术点：用 getBoundingClientRect() 计算 fixed 定位坐标，
+    // 使下拉面板与输入框对齐，同时不受 Modal overflow:auto 影响。
+    function toggleDropdown() {
+        const ms = document.getElementById('multi-select');
+        const dd = document.getElementById('ms-dropdown');
+        const willOpen = !dd.classList.contains('is-open');
+        ms.classList.toggle('is-open');
+        dd.classList.toggle('is-open');
+        if (willOpen) {
+            const rect = ms.getBoundingClientRect();
+            dd.style.top   = (rect.bottom + 4) + 'px';
+            dd.style.left  = rect.left + 'px';
+            dd.style.width = rect.width + 'px';
+        }
+    }
+
+    // ─────────── 勾选/取消选项 ───────────
+    function toggleOption(el, e) {
+        e.stopPropagation();
+        const cb = el.querySelector('input[type="checkbox"]');
+        cb.checked = !cb.checked;
+        renderTags();
+    }
+
+    // ─────────── 渲染已选 tag ───────────
+    // 锁定项（is-disabled）不渲染 × 删除按钮
+    function renderTags() {
+        const ms = document.getElementById('multi-select');
+        // 清除旧 tags（保留 placeholder 和 arrow）
+        ms.querySelectorAll('.ms-tag').forEach(t => t.remove());
+
+        const selected = [];
+        document.querySelectorAll('#ms-dropdown .ms-option').forEach(opt => {
+            const cb = opt.querySelector('input[type="checkbox"]');
+            if (cb && cb.checked) {
+                selected.push({
+                    name: opt.textContent.trim(),
+                    locked: opt.classList.contains('is-disabled')
+                });
+            }
+        });
+
+        const placeholder = document.getElementById('ms-placeholder');
+        if (selected.length > 0) {
+            placeholder.style.display = 'none';
+            selected.forEach(item => {
+                const tag = document.createElement('span');
+                tag.className = 'ms-tag';
+                tag.innerHTML = item.name + (item.locked
+                    ? ''  // 锁定项：无 × 按钮
+                    : ` <span class="ms-tag-close" onclick="removeTag(event, '${item.name}')">×</span>`
+                );
+                ms.insertBefore(tag, placeholder);
+            });
+        } else {
+            placeholder.style.display = '';
+        }
+    }
+
+    // ─────────── 点击 × 移除 tag ───────────
+    function removeTag(e, name) {
+        e.stopPropagation();
+        document.querySelectorAll('#ms-dropdown .ms-option:not(.is-disabled)').forEach(opt => {
+            if (opt.textContent.trim() === name) {
+                opt.querySelector('input').checked = false;
+            }
+        });
+        renderTags();
+    }
+
+    // ─────────── 关闭/保存弹窗 ───────────
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('is-visible');
+        // 收起下拉
+        document.getElementById('ms-dropdown').classList.remove('is-open');
+        document.getElementById('multi-select').classList.remove('is-open');
+    }
+
+    function saveModal() {
+        closeModal();
+        showToast('配置保存成功');
+    }
+
+    // ─────────── Toast ───────────
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('is-visible');
+        setTimeout(() => t.classList.remove('is-visible'), 2500);
+    }
+
+    // ─────────── 点击遮罩关闭弹窗 ───────────
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // ─────────── 点击下拉外部收起 ───────────
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#multi-select') && !e.target.closest('#ms-dropdown')) {
+            document.getElementById('ms-dropdown')?.classList.remove('is-open');
+            document.getElementById('multi-select')?.classList.remove('is-open');
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>侧滑详情面板模板</title>
+    <style>
+        /* ===== CSS Variables (MagicBox Design Token) ===== */
+        :root {
+            /* 品牌色 */
+            --color-primary: #1272FF;
+            --color-primary-hover: #3388FF;
+            --color-primary-active: #0F5FD9;
+
+            /* 功能色 */
+            --color-success: #27C274;
+            --color-warning: #FF9214;
+            --color-danger: #F43B2C;
+
+            /* 文字色 */
+            --color-text-primary: rgba(0, 0, 0, 0.85);
+            --color-text-secondary: rgba(0, 0, 0, 0.55);
+            --color-text-disabled: rgba(0, 0, 0, 0.25);
+
+            /* 边框 & 背景 */
+            --color-border: #D1D7E1;
+            --color-bg-base: #F5F7FA;
+            --color-bg-white: #FFFFFF;
+
+            /* 尺寸 */
+            --border-radius: 4px;
+            --btn-height-normal: 32px;
+            --font-size-base: 14px;
+            --table-row-height: 42px;
+
+            /* 字体栈 */
+            --font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* ===== Reset & Base ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-base);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 24px;
+            overflow-x: hidden;
+        }
+
+        a {
+            color: var(--color-primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        a:hover {
+            color: var(--color-primary-hover);
+        }
+
+        /* ===== Button ===== */
+        .btn-text {
+            color: var(--color-primary);
+            background: transparent;
+            border: none;
+            padding: 0 4px;
+            cursor: pointer;
+            font-size: var(--font-size-base);
+        }
+
+        .btn-text:hover {
+            color: var(--color-primary-hover);
+        }
+
+        /* ===== Table (Simple) ===== */
+        .table-wrapper {
+            background-color: var(--color-bg-white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            border-style: hidden;
+        }
+
+        .table th, .table td {
+            padding: 0 16px;
+            height: var(--table-row-height);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .table th {
+            background-color: #F0F1F5;
+            color: var(--color-text-primary);
+            font-weight: 500;
+        }
+
+        .table tbody tr:hover {
+            background-color: #F0F5FF;
+        }
+
+        /* ===== Tag ===== */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 8px;
+            font-size: 12px;
+            border-radius: 2px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tag-success {
+            color: var(--color-success);
+            background-color: rgba(39, 194, 116, 0.1);
+            border-color: rgba(39, 194, 116, 0.3);
+        }
+
+        /* ===== SideSlider ===== */
+        .sideslider-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sideslider-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .sideslider-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 480px;
+            height: 100vh;
+            background-color: var(--color-bg-white);
+            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .sideslider-panel.show {
+            transform: translateX(0);
+        }
+
+        .sideslider-header {
+            height: 48px;
+            padding: 0 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-white);
+        }
+
+        .sideslider-close {
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .sideslider-close:hover {
+            color: var(--color-text-primary);
+        }
+
+        /* ===== Tabs ===== */
+        .tabs-nav {
+            display: flex;
+            padding: 0 24px;
+            border-bottom: 1px solid #f0f0f0;
+            background-color: var(--color-bg-white);
+        }
+
+        .tab-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            color: var(--color-text-primary);
+            font-size: var(--font-size-base);
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab-item:hover {
+            color: var(--color-primary);
+        }
+
+        .tab-item.active {
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--color-primary);
+        }
+
+        /* ===== Content Area ===== */
+        .sideslider-body {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* ===== Description List ===== */
+        .desc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .desc-item {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .desc-label {
+            width: 120px;
+            min-width: 120px;
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-base);
+            line-height: 1.5;
+        }
+
+        .desc-value {
+            flex: 1;
+            color: var(--color-text-primary);
+            font-size: var(--font-size-base);
+            line-height: 1.5;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 列表页 -->
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>主机名称</th>
+                    <th>内网IP</th>
+                    <th>状态</th>
+                    <th style="width: 120px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>服务器-生产环境-01</td>
+                    <td>10.0.0.15</td>
+                    <td><span class="tag tag-success">正常</span></td>
+                    <td>
+                        <button class="btn-text" onclick="openSideslider()">查看详情</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 侧滑面板遮罩 -->
+    <div class="sideslider-overlay" id="sidesliderOverlay" onclick="closeSideslider()"></div>
+
+    <!-- 侧滑面板 -->
+    <div class="sideslider-panel" id="sidesliderPanel">
+        <!-- 标题栏 -->
+        <div class="sideslider-header">
+            <!-- 自定义：修改侧滑面板标题 -->
+            <span>服务器-生产环境-01 详情</span>
+            <span class="sideslider-close" onclick="closeSideslider()">✕</span>
+        </div>
+
+        <!-- Tab 切换区 -->
+        <div class="tabs-nav">
+            <!-- 自定义：修改 Tab 名称 -->
+            <div class="tab-item active" onclick="switchTab('basic')">基本信息</div>
+            <div class="tab-item" onclick="switchTab('config')">关联配置</div>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="sideslider-body">
+            <!-- 基本信息 Tab 内容 -->
+            <div class="tab-pane active" id="tab-basic">
+                <div class="desc-list">
+                    <!-- 自定义：修改基本信息字段 -->
+                    <div class="desc-item">
+                        <div class="desc-label">名 称</div>
+                        <div class="desc-value">服务器-生产环境-01</div>
+                    </div>
+                    <div class="desc-item">
+                        <div class="desc-label">类 型</div>
+                        <div class="desc-value">主机</div>
+                    </div>
+                    <div class="desc-item">
+                        <div class="desc-label">状 态</div>
+                        <div class="desc-value"><span class="tag tag-success">正常</span></div>
+                    </div>
+                    <div class="desc-item">
+                        <div class="desc-label">创建时间</div>
+                        <div class="desc-value">2026-02-24 10:00:00</div>
+                    </div>
+                    <div class="desc-item">
+                        <div class="desc-label">创 建 人</div>
+                        <div class="desc-value">admin</div>
+                    </div>
+                    <div class="desc-item">
+                        <div class="desc-label">最后修改时间</div>
+                        <div class="desc-value">2026-02-25 14:30:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 关联配置 Tab 内容 -->
+            <div class="tab-pane" id="tab-config">
+                <div class="desc-list">
+                    <!-- 自定义：修改关联配置字段 -->
+                    <div class="desc-item">
+                        <div class="desc-label">关联策略</div>
+                        <div class="desc-value">
+                            <a href="#">CPU使用率告警策略</a><br>
+                            <a href="#">内存使用率告警策略</a>
+                        </div>
+                    </div>
+                    <div class="desc-item">
+                        <div class="desc-label">采集任务</div>
+                        <div class="desc-value">
+                            <a href="#">基础指标采集任务</a>
+                        </div>
+                    </div>
+                    <div class="desc-item">
+                        <div class="desc-label">监控项数量</div>
+                        <div class="desc-value">12 个</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('sidesliderOverlay');
+        const panel = document.getElementById('sidesliderPanel');
+
+        function openSideslider() {
+            overlay.classList.add('show');
+            // 延迟一点添加 show 类，以触发 transform 动画
+            setTimeout(() => {
+                panel.classList.add('show');
+            }, 10);
+        }
+
+        function closeSideslider() {
+            panel.classList.remove('show');
+            // 等待动画结束后隐藏遮罩
+            setTimeout(() => {
+                overlay.classList.remove('show');
+            }, 300);
+        }
+
+        function switchTab(tabId) {
+            // 移除所有 active 状态
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            
+            // 添加当前 active 状态
+            event.currentTarget.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+    </script>
+</body>
+</html>

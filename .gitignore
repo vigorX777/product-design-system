@@ -26,6 +26,10 @@ Thumbs.db
 # 日志与依赖
 *.log
 node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
 
 # 进展备忘（临时文件）
 _进展备忘.md
