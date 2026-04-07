@@ -51,7 +51,6 @@ OLD_PATTERNS = [
     "convert_product_docs.py",
     "organize_obsidian_attachments.py",
     "_临时脚本归档",
-    "docs/cover.png",
 ]
 
 TEXT_SUFFIXES = {".md", ".py", ".js", ".html", ".json", ".txt"}
