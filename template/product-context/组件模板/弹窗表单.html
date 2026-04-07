@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹窗表单模板</title>
+    <style>
+        /* ===== CSS Variables (MagicBox Design Token) ===== */
+        :root {
+            /* 品牌色 */
+            --color-primary: #1272FF;
+            --color-primary-hover: #3388FF;
+            --color-primary-active: #0F5FD9;
+
+            /* 功能色 */
+            --color-success: #27C274;
+            --color-warning: #FF9214;
+            --color-danger: #F43B2C;
+
+            /* 文字色 */
+            --color-text-primary: rgba(0, 0, 0, 0.85);
+            --color-text-secondary: rgba(0, 0, 0, 0.55);
+            --color-text-disabled: rgba(0, 0, 0, 0.25);
+
+            /* 边框 & 背景 */
+            --color-border: #D1D7E1;
+            --color-bg-base: #F5F7FA;
+            --color-bg-white: #FFFFFF;
+
+            /* 尺寸 */
+            --border-radius: 4px;
+            --btn-height-normal: 32px;
+            --font-size-base: 14px;
+
+            /* 字体栈 */
+            --font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* ===== Reset & Base ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-base);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* ===== Button ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: var(--btn-height-normal);
+            padding: 0 16px;
+            font-size: var(--font-size-base);
+            border-radius: var(--border-radius);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+            border-color: var(--color-primary-hover);
+        }
+
+        .btn-default {
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-white);
+            border-color: var(--color-border);
+        }
+
+        .btn-default:hover {
+            color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        /* ===== Dialog ===== */
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* 默认隐藏 */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .dialog-overlay.show {
+            display: flex;
+        }
+
+        .dialog-content {
+            background: var(--color-bg-white);
+            width: 480px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .dialog-header {
+            height: 48px;
+            padding: 0 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--color-text-primary);
+        }
+
+        .dialog-close {
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .dialog-close:hover {
+            color: var(--color-text-primary);
+        }
+
+        .dialog-body {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .dialog-footer {
+            height: 56px;
+            padding: 0 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            background-color: #fafbfd;
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+        }
+
+        /* ===== Form ===== */
+        .form-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .form-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            width: 80px;
+            min-width: 80px;
+            text-align: right;
+            padding-right: 12px;
+            line-height: 32px;
+            font-size: var(--font-size-base);
+            color: var(--color-text-primary);
+        }
+
+        .form-label.required::before {
+            content: '*';
+            color: var(--color-danger);
+            margin-right: 4px;
+        }
+
+        .form-control {
+            flex: 1;
+            position: relative;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 4px 10px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-base);
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-white);
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: var(--font-family);
+        }
+
+        .form-input, .form-select {
+            height: var(--btn-height-normal);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(18, 114, 255, 0.2);
+        }
+
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: var(--color-text-disabled);
+        }
+
+        /* 错误状态 */
+        .form-item.is-error .form-input,
+        .form-item.is-error .form-select,
+        .form-item.is-error .form-textarea {
+            border-color: var(--color-danger);
+        }
+
+        .form-item.is-error .form-input:focus,
+        .form-item.is-error .form-select:focus,
+        .form-item.is-error .form-textarea:focus {
+            box-shadow: 0 0 0 2px rgba(244, 59, 44, 0.2);
+        }
+
+        .form-error-tip {
+            display: none;
+            color: var(--color-danger);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .form-item.is-error .form-error-tip {
+            display: block;
+        }
+
+        /* ===== Switch Toggle ===== */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+            margin-top: 5px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 22px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--color-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 触发按钮 -->
+    <button class="btn btn-primary" onclick="openDialog()">新建</button>
+
+    <!-- 弹窗 -->
+    <div class="dialog-overlay" id="myDialog">
+        <div class="dialog-content" onclick="event.stopPropagation()">
+            <!-- 标题栏 -->
+            <div class="dialog-header">
+                <!-- 自定义：修改弹窗标题 -->
+                <span>新建监控目标</span>
+                <span class="dialog-close" onclick="closeDialog()">✕</span>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="dialog-body">
+                <!-- 自定义：修改表单字段 -->
+                <div class="form-item is-error">
+                    <label class="form-label required">名称</label>
+                    <div class="form-control">
+                        <input type="text" class="form-input" placeholder="请输入名称">
+                        <div class="form-error-tip">名称不能为空</div>
+                    </div>
+                </div>
+                
+                <div class="form-item">
+                    <label class="form-label required">类型</label>
+                    <div class="form-control">
+                        <select class="form-select">
+                            <option value="host">主机</option>
+                            <option value="db">数据库</option>
+                            <option value="app">应用</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-item">
+                    <label class="form-label">描述</label>
+                    <div class="form-control">
+                        <textarea class="form-textarea" placeholder="请输入描述信息" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-item">
+                    <label class="form-label">启用状态</label>
+                    <div class="form-control">
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部操作区 -->
+            <div class="dialog-footer">
+                <button class="btn btn-default" onclick="closeDialog()">取消</button>
+                <button class="btn btn-primary" onclick="submitForm()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dialog = document.getElementById('myDialog');
+
+        // 点击遮罩层关闭弹窗
+        dialog.addEventListener('click', function(e) {
+            if (e.target === dialog) {
+                closeDialog();
+            }
+        });
+
+        function openDialog() {
+            dialog.classList.add('show');
+        }
+
+        function closeDialog() {
+            dialog.classList.remove('show');
+        }
+
+        function submitForm() {
+            alert('提交成功！');
+            closeDialog();
+        }
+    </script>
+</body>
+</html>

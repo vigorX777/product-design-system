@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标准列表页模板</title>
+    <style>
+        /* ===== CSS Variables (Design Token — 可自定义) ===== */
+        :root {
+            /* 品牌色 — 自定义: 替换为你的设计系统主色 */
+            --color-primary: #4A90E2;
+            --color-primary-hover: #5CA0E8;
+            --color-primary-active: #3A7BC8;
+
+            /* 功能色 */
+            --color-success: #52C41A;
+            --color-warning: #FAAD14;
+            --color-danger: #FF4D4F;
+
+            /* 文字色 */
+            --color-text-primary: rgba(0, 0, 0, 0.85);
+            --color-text-secondary: rgba(0, 0, 0, 0.55);
+            --color-text-disabled: rgba(0, 0, 0, 0.25);
+
+            /* 边框 & 背景 */
+            --color-border: #D1D7E1;
+            --color-bg-base: #F5F7FA;
+            --color-bg-white: #FFFFFF;
+            --color-bg-table-stripe: #FAFBFD;
+
+            /* 尺寸 */
+            --border-radius: 4px;
+            --btn-height-normal: 32px;
+            --font-size-base: 14px;
+            --table-row-height: 42px;
+
+            /* 字体栈 */
+            --font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* ===== Reset & Base ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-base);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 24px;
+        }
+
+        a {
+            color: var(--color-primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        a:hover {
+            color: var(--color-primary-hover);
+        }
+
+        /* ===== Layout ===== */
+        .page-container {
+            background-color: var(--color-bg-white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+            min-height: calc(100vh - 48px);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-desc {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            font-weight: normal;
+        }
+
+        /* ===== Toolbar (Search & Filter) ===== */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .toolbar-left {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-right {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* ===== Button ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: var(--btn-height-normal);
+            padding: 0 16px;
+            font-size: var(--font-size-base);
+            border-radius: var(--border-radius);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+            border-color: var(--color-primary-hover);
+        }
+
+        .btn-default {
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-white);
+            border-color: var(--color-border);
+        }
+
+        .btn-default:hover {
+            color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .btn-text {
+            color: var(--color-primary);
+            background: transparent;
+            border-color: transparent;
+            padding: 0 4px;
+        }
+
+        .btn-text:hover {
+            color: var(--color-primary-hover);
+        }
+
+        .btn-text.danger {
+            color: var(--color-danger);
+        }
+
+        .btn-text.danger:hover {
+            color: #ff5647;
+        }
+
+        /* ===== Input & Select ===== */
+        .input {
+            height: var(--btn-height-normal);
+            padding: 0 10px;
+            font-size: var(--font-size-base);
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-white);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            transition: border-color 0.2s;
+            outline: none;
+            width: 200px;
+        }
+
+        .input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(18, 114, 255, 0.2);
+        }
+
+        .input::placeholder {
+            color: var(--color-text-disabled);
+        }
+
+        .select {
+            height: var(--btn-height-normal);
+            padding: 0 10px;
+            font-size: var(--font-size-base);
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-white);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            outline: none;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .select:focus {
+            border-color: var(--color-primary);
+        }
+
+        /* ===== Table ===== */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            border-style: hidden; /* 隐藏外层边框，通过行边框体现分割感 */
+        }
+
+        .table th, .table td {
+            padding: 0 16px;
+            height: var(--table-row-height);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .table th {
+            background-color: #F0F1F5;
+            color: var(--color-text-primary);
+            font-weight: 500;
+        }
+
+        .table tbody tr:hover {
+            background-color: #F0F5FF;
+        }
+
+        .table input[type="checkbox"] {
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
+        }
+
+        /* ===== Tag ===== */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 8px;
+            font-size: 12px;
+            border-radius: 2px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tag-success {
+            color: var(--color-success);
+            background-color: rgba(39, 194, 116, 0.1);
+            border-color: rgba(39, 194, 116, 0.3);
+        }
+
+        .tag-warning {
+            color: var(--color-warning);
+            background-color: rgba(255, 146, 20, 0.1);
+            border-color: rgba(255, 146, 20, 0.3);
+        }
+
+        .tag-danger {
+            color: var(--color-danger);
+            background-color: rgba(244, 59, 44, 0.1);
+            border-color: rgba(244, 59, 44, 0.3);
+        }
+
+        .tag-default {
+            color: var(--color-text-secondary);
+            background-color: #f0f1f5;
+            border-color: var(--color-border);
+        }
+
+        /* ===== Pagination ===== */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0 0;
+            font-size: var(--font-size-base);
+            color: var(--color-text-secondary);
+        }
+
+        .pagination-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .pagination-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            background-color: var(--color-bg-white);
+            cursor: pointer;
+            color: var(--color-text-primary);
+            transition: all 0.2s;
+            padding: 0 8px;
+        }
+
+        .page-btn:hover:not(.disabled):not(.active) {
+            color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .page-btn.active {
+            color: #fff;
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .page-btn.disabled {
+            color: var(--color-text-disabled);
+            background-color: #f0f1f5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-container">
+        <!-- 页面标题栏 -->
+        <div class="page-header">
+            <div class="page-title">
+                <!-- 自定义：修改页面标题 -->
+                资源管理列表
+                <span class="page-desc">管理和查看所有资源的运行状态</span>
+            </div>
+            <div class="page-actions">
+                <!-- 自定义：修改主操作按钮 -->
+                <button class="btn btn-primary">新建</button>
+            </div>
+        </div>
+
+        <!-- 搜索/筛选区 -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <!-- 自定义：左侧批量操作按钮 -->
+                <button class="btn btn-default">批量删除</button>
+                <button class="btn btn-default">导出</button>
+            </div>
+            <div class="toolbar-right">
+                <!-- 自定义：右侧筛选条件 -->
+                <select class="select">
+                    <option value="">全部状态</option>
+                    <option value="normal">正常</option>
+                    <option value="abnormal">异常</option>
+                    <option value="unknown">未知</option>
+                </select>
+                <input type="text" class="input" placeholder="请输入名称搜索">
+                <button class="btn btn-primary">查询</button>
+                <button class="btn btn-default">重置</button>
+            </div>
+        </div>
+
+        <!-- 表格区 -->
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <!-- 自定义：修改表头列定义 -->
+                        <th style="width: 40px;"><input type="checkbox" id="checkAll"></th>
+                        <th style="width: 60px;">序号</th>
+                        <th>名称</th>
+                        <th>所属分组</th>
+                        <th>类型</th>
+                        <th>状态</th>
+                        <th style="width: 180px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 自定义：修改表格数据行 -->
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox"></td>
+                        <td>1</td>
+                        <td>示例资源-001</td>
+                        <td>分组 A</td>
+                        <td>类型一</td>
+                        <td><span class="tag tag-success">正常</span></td>
+                        <td>
+                            <button class="btn btn-text">查看</button>
+                            <button class="btn btn-text">编辑</button>
+                            <button class="btn btn-text danger">删除</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox"></td>
+                        <td>2</td>
+                        <td>示例资源-002</td>
+                        <td>分组 A</td>
+                        <td>类型二</td>
+                        <td><span class="tag tag-danger">异常</span></td>
+                        <td>
+                            <button class="btn btn-text">查看</button>
+                            <button class="btn btn-text">编辑</button>
+                            <button class="btn btn-text danger">删除</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox"></td>
+                        <td>3</td>
+                        <td>示例资源-003</td>
+                        <td>分组 B</td>
+                        <td>类型一</td>
+                        <td><span class="tag tag-success">正常</span></td>
+                        <td>
+                            <button class="btn btn-text">查看</button>
+                            <button class="btn btn-text">编辑</button>
+                            <button class="btn btn-text danger">删除</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox"></td>
+                        <td>4</td>
+                        <td>示例资源-004</td>
+                        <td>分组 B</td>
+                        <td>类型三</td>
+                        <td><span class="tag tag-warning">待处理</span></td>
+                        <td>
+                            <button class="btn btn-text">查看</button>
+                            <button class="btn btn-text">编辑</button>
+                            <button class="btn btn-text danger">删除</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox"></td>
+                        <td>5</td>
+                        <td>示例资源-005</td>
+                        <td>分组 C</td>
+                        <td>类型二</td>
+                        <td><span class="tag tag-default">未知</span></td>
+                        <td>
+                            <button class="btn btn-text">查看</button>
+                            <button class="btn btn-text">编辑</button>
+                            <button class="btn btn-text danger">删除</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页区 -->
+        <div class="pagination">
+            <div class="pagination-left">
+                <!-- 自定义：修改总条数 -->
+                共 128 条
+            </div>
+            <div class="pagination-right">
+                <button class="page-btn disabled">&lt;</button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn" style="border: none; background: transparent; cursor: default;">...</button>
+                <button class="page-btn">13</button>
+                <button class="page-btn">&gt;</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全选/取消全选逻辑
+        const checkAll = document.getElementById('checkAll');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                rowCheckboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+        }
+
+        rowCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                const allChecked = Array.from(rowCheckboxes).every(c => c.checked);
+                const someChecked = Array.from(rowCheckboxes).some(c => c.checked);
+                checkAll.checked = allChecked;
+                checkAll.indeterminate = someChecked && !allChecked;
+            });
+        });
+    </script>
+</body>
+</html>
